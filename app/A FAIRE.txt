@@ -1,0 +1,18 @@
+Requête logout problème d'exception no http responde code status ok
+
+optimisations : 
+
+-utiliser websocket pour des échanges instantannés et bi-directionnels
+
+notes:
+
+-Cross origin resource sharing entre API et front
+    Pour pouvoir configurer "httponly" (permet de rendre le token innacessible par le client, avec des scripts javascript par exemple) :
+    Il faut que le cookie soit set en "secure" et ainsi il faut activer le https :
+        - Back-dev : - Il faut générer un certificat et une clée privée (a l'aide de openssl) puis configurer le serveur apache ainsi que le virtual host. 
+                    
+        - Front-dev : Run react : ($env:HTTPS = "true") -and (npm start);
+
+        - Désactiver le trusted ssl sur le navigateur pour les deux domaines back/front
+
+    
