@@ -21,7 +21,7 @@ class MessagesModel extends Model{
     {
         $userId = $user->getId();
 
-        $messages = $this->sendQuery("SELECT * FROM $this->table WHERE sender = $userId OR receiver = $userId ORDER BY created_at")->fetchAll();
+        $messages = $this->sendQuery("SELECT * FROM $this->table WHERE sender = $userId OR receiver = $userId ORDER BY created_at ASC")->fetchAll();
 
         $conversations = [];
         foreach($messages as $message){

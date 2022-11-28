@@ -33,14 +33,9 @@ const Chats = () => {
             })
         }
     }, [conversations]);
-    // conversations.forEach((conversation) => {
-    //     if(newChat && newChat.id === conversation.id_contact){
-    //         setNewChat(null);
-    //     }
-    // });
 
     return(
-        <div className="overflow-y-scroll">
+        <div className="overflow-y-scroll overflow-x-hidden">
 
             {newChat && <div className="p-[10px] bg-violet-600 flex items-center gap-[10px] text-white cursor-pointer hover:bg-gray-900">
                 <img className="w-[50px] h-[50px] rounded-full object-cover" src={'https://messenger/' + newChat.img} alt="" />
@@ -50,10 +45,6 @@ const Chats = () => {
             </div>}
 
             {conversations && conversations.map((conversation) => {
-
-                // if(newChat && newChat.id === conversation.id_contact){
-                //     setNewChat(null);
-                // }
 
                 const bgColor = () => {
                     if(currentConversation === conversation.id_contact){

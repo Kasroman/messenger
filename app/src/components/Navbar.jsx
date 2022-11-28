@@ -7,10 +7,8 @@ const Navbar = () => {
     const logout = async() => {
 
         const response = await API.logout();
-        console.log(response);
         if(!response.ok){
             const json = await response.json();
-            console.log(json);
         }else{
             localStorage.removeItem('xsrfToken');
             window.location.reload(false);

@@ -179,8 +179,6 @@ class API {
 
     static async postMessage(idContact, content){
 
-        console.log(idContact, content);
-
         const headers = new Headers();
         headers.append('Origin', 'https://localhost:3000');
 
@@ -198,6 +196,31 @@ class API {
             body: JSON.stringify({
                 "content": content,
             })
+        };
+
+        const response = await fetch(`https://messenger/Api/postMessage/${idContact}`, requestOptions);
+        return response;
+    }
+
+    static async postImage(idContact, image){
+        const headers = new Headers();
+        headers.append('Origin', 'https://localhost:3000');
+
+        const xsrfToken = localStorage.getItem('xsrfToken');
+
+        if(xsrfToken){
+            headers.append("X-XSRF-TOKEN", xsrfToken);
+        }
+
+        const data = new FormData();
+        data.append('image', image);
+
+        const requestOptions = {
+            method: 'POST',
+            mode: 'cors',
+            headers: headers,
+            credentials: 'include',
+            body: data
         };
 
         const response = await fetch(`https://messenger/Api/postMessage/${idContact}`, requestOptions);

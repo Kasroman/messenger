@@ -18,12 +18,12 @@ abstract class Controller{
             // On vérifie que l'image soit d'une extension .jpg, .jpeg ou .png
             if(strpos($files['type'], 'png') || strpos($files['type'], 'jpg') || strpos($files['type'], 'jpeg')){      
             }else{
-                $errors['errors'][1] = ['Votre fichier doit être du format .jpg, .jpeg ou .png.'];
+                $errors['errors'][] = 'Votre fichier doit être du format .jpg, .jpeg ou .png.';
             }
             
             // On vérifie que la taille de l'image soit inférieure a 1mo
             if($files['size'] > 1000000){
-                $errors['errors'][2] = ['Votre fichier image est trop volumineux ! (max 1Mo).'];
+                $errors['errors'][] = 'Votre fichier image est trop volumineux ! (max 1Mo).';
             }
 
             if(!empty($errors)){
@@ -41,7 +41,7 @@ abstract class Controller{
             return $path;
             
         }else{
-            $errors['errors'][0] = ['Erreur lors de l\'envoi.'];
+            $errors['errors'][] = json_encode('Erreur lors de l\'envoi.');
         }
 
         return $errors;

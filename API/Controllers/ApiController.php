@@ -278,7 +278,7 @@ class ApiController extends Controller{
         header("Access-Control-Allow-Origin: https://localhost:3000");
         header("Access-Control-Allow-Headers: X-XSRF-TOKEN, *");
         header("Access-Control-Allow-Credentials: true");
-        header('Content-Type: application/json');
+        header('Content-Type: application/json, multipart/form-data');
         header('Access-Control-Allow-Methods: POST');
 
         if($_SERVER['REQUEST_METHOD'] === 'OPTIONS'){
@@ -320,12 +320,13 @@ class ApiController extends Controller{
                 $receiver = $usersModel->hydrate($receiver);
 
                 if(isset($_FILES['image'])){
-                    $content = $this->addImage($sender->getPseudo(), $_FILES['image'], 'images/conversations/');
-                    if(isset($content['errors'])){
-                        throw new Exception(json_encode($content['errors']), 415);
+                    $addImage = $this->addImage($sender->getPseudo(), $_FILES['image'], 'images/conversations/');
+                    if(isset($addImage['errors'])){
+                        throw new Exception(json_encode($addImage['errors']), 415);
                         exit;
                     }
                     $type = 'image';
+                    $content = $addImage;
                 }else{
                     $content = $post->content;
                     $type = 'text';
@@ -540,7 +541,7 @@ class ApiController extends Controller{
             $i++;
         }
 
-        echo json_encode($data);
+        echo json_encode(array_reverse($data));
         throw new Exception('', 200);
         die;
     }

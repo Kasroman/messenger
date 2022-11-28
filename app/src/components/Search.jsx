@@ -14,13 +14,12 @@ const Search = () => {
     const handleChange = async(input) => {
         if(input && !input.includes(' ')){
             const response = await API.searchUsers(input);
-            console.log(response);
             if(!response.ok){
                 setUsers(null);
             }else{
                 const json = await response.json();
-                console.log(API.jsonToArray(json));
-                setUsers(API.jsonToArray(json));
+                const array = API.jsonToArray(json);
+                setUsers(array);
             }
         }else{
             setUsers(null);
@@ -32,7 +31,6 @@ const Search = () => {
             <div className="p-[10px]">
                 <input className="bg-transparent text-white outline-none" onChange={(e) => {handleChange(e.target.value)}} type="text" name="" id="" placeholder="find a user" />
             </div>
-            {console.log(users)}
             {users && users.map(user => {
                 return(
                     <div key={user.id} onClick={() => {

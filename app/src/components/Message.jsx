@@ -11,20 +11,40 @@ const Message = (props) => {
         }
     }
 
-    return(
-        <div className="m-[20px]">
-            <div className="flex gap-[20px]">
-                <div className="flex flex-col text-gray-600">
-                    <img className="min-w-[50px] w-[50px] min-h-[50px] h-[50px] rounded-full object-cover" src={'https://messenger/' + props.message.img_contact} alt="" />
-                </div>
+    const received = () => {
+        return(
+            <div className="my-[20px] w-full">
+                <div className="flex gap-[20px]">
+                    <div className="flex flex-col text-gray-600">
+                        <img className="min-w-[50px] w-[50px] min-h-[50px] h-[50px] rounded-full object-cover" src={'https://messenger/' + props.message.img_contact} alt="" />
+                    </div>
 
-                <div className="max-w-[80%] flex flex-col gap-[5px]">
-                    {content()}
-                    <span className="text-gray-600">{props.message.created_at}</span>
+                    <div className="max-w-[80%] flex items-start flex-col gap-[5px]">
+                        {content()}
+                        <span className="text-gray-600">{props.message.created_at}</span>
+                    </div>
                 </div>
             </div>
-            
-        </div>
+        )
+    }
+
+    const sent = () => {
+        return(
+            <div className="my-[20px] w-full">
+                <div className="flex justify-end gap-[20px]">
+                    <div className="max-w-[80%] flex items-end flex-col gap-[5px]">
+                        {content()}
+                        <span className="text-gray-600">{props.message.created_at}</span>
+                    </div>
+                </div>
+            </div>
+        )
+    }
+
+    return(
+        props.message.sent ? 
+        sent() :
+        received()
     );
 };
 

@@ -31,7 +31,7 @@ const Messages = (props) => {
     },[props.idContact]);
 
     return(
-        <div className="bg-violet-300 p-[10px] h-[90%] overflow-y-scroll">
+        <div id="chat" className="bg-violet-300 p-[10px] h-[90%] overflow-y-scroll flex flex-col-reverse">
             {messages && messages.map((message) => {
                 return <Message key={message.id} message={message} />
             })}
