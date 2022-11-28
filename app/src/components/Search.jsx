@@ -1,22 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useContext } from 'react';
+
+import { ConversationContext, NewchatContext } from '../contexts/Contexts';
 
 import API from '../API';
 
 const Search = () => {
 
+    const {setCurrentConversation} = useContext(ConversationContext);
+    const [, setNewchat] = useContext(NewchatContext);
+
     const [users, setUsers] = useState(null);
 
     const handleChange = async(input) => {
-        const response = await API.searchUsers(input);
-        
-        if(!response.ok){
+        if(input && !input.includes(' ')){
+            const response = await API.searchUsers(input);
             console.log(response);
-            // setUsers(null);
+            if(!response.ok){
+                setUsers(null);
+            }else{
+                const json = await response.json();
+                console.log(API.jsonToArray(json));
+                setUsers(API.jsonToArray(json));
+            }
         }else{
-            console.log(response);
-            // setUsers(response.json());
+            setUsers(null);
         }
-        // console.log(users);
     }
 
     return(
@@ -24,16 +32,24 @@ const Search = () => {
             <div className="p-[10px]">
                 <input className="bg-transparent text-white outline-none" onChange={(e) => {handleChange(e.target.value)}} type="text" name="" id="" placeholder="find a user" />
             </div>
-            {/* {users && users.map((user) => {
-                <div className="p-[10px] flex items-center gap-[10px] text-white cursor-pointer hover:bg-gray-900">
-                    <img className="w-[50px] h-[50px] rounded-full object-cover" src="http://messenger/images/profile/default_pp.png" alt="" />   
-                    <div>
-                        <span>Jane</span>
+            {console.log(users)}
+            {users && users.map(user => {
+                return(
+                    <div key={user.id} onClick={() => {
+                            setUsers(null);
+                            setNewchat(user);
+                            setCurrentConversation(user.id);
+                        }} className="p-[10px] flex items-center gap-[10px] text-white cursor-pointer hover:bg-gray-900">
+                        <img className="w-[50px] h-[50px] rounded-full object-cover" src={'https://messenger/' + user.img} alt="" />   
+                        <div>
+                            <span>{user.pseudo}</span>
+                        </div>
                     </div>
-                </div>
-            })} */}
+                );
+            })}
         </div>
     );
 };
 
 export default Search;
+

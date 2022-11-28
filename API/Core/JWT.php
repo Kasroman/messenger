@@ -45,8 +45,6 @@ class JWT
             'exp' => $this->exp
         ])));
 
-
-
         $signature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode(hash_hmac('sha256', $hashHeader . '.' . $hashPayload, $this->secret, true)));
 
         $this->token = $hashHeader . '.' .$hashPayload . '.' . $signature;
@@ -54,7 +52,7 @@ class JWT
 
     public function setToken(string $token, string $xsrfToken): self|false
     {
-        $this->token = htmlspecialchars($token);
+        $this->token = $token;
 
         if(!$this->isFormated()){
             return false;
@@ -71,7 +69,7 @@ class JWT
         $user = $usersModel->hydrate($user);
 
         $this->user = $user;
-        $this->xsrfToken = htmlspecialchars($xsrfToken);
+        $this->xsrfToken = $xsrfToken;
         $this->iat = $payload->iat;
         $this->exp = $payload->exp;
 
@@ -99,8 +97,6 @@ class JWT
             'iat' => $this->iat,
             'exp' => $this->exp
         ])));
-
-
 
         $generatedSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode(hash_hmac('sha256', $hashHeader . '.' . $hashPayload, $this->secret, true)));
 

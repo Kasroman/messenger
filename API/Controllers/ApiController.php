@@ -12,7 +12,7 @@ class ApiController extends Controller{
 
     public function test(){
         echo json_encode([
-            'test' => 'test'
+            'message' => 'OK : domaine accessible via https'
         ]);
         http_response_code(200);
     }
@@ -65,10 +65,16 @@ class ApiController extends Controller{
                     $token = new JWT();
                     $token->generate($user);
                     
-                    setcookie('access_token', $token->getToken(), $token->getExp(), '/', null, true, true);
+                    // setcookie('access_token', $token->getToken(), $token->getExp(), '/', null, true, true);
+                    setcookie('access_token', $token->getToken(), [
+                        'expires' => $token->getExp(),
+                        'path' => '/',
+                        'secure' => true,
+                        'httponly' => true,
+                        'samesite' => 'None'
+                    ]);
 
                     echo json_encode([
-                        'exp' => $token->getPayload()->exp,
                         'xsrfToken' => $token->getXsrfToken()
                     ]);
                     throw new Exception('', 200);
@@ -143,7 +149,7 @@ class ApiController extends Controller{
 
     public function logout(){
 
-        header("Access-Control-Allow-Headers: X-XSRF-TOKEN");
+        header("Access-Control-Allow-Headers: X-XSRF-TOKEN, *");
         header("Access-Control-Allow-Origin: https://localhost:3000");
         header("Access-Control-Allow-Credentials: true");
         header('Access-Control-Allow-Methods: GET');
@@ -152,11 +158,16 @@ class ApiController extends Controller{
             throw new Exception('', 200);
             exit;
         }
+
+        if($_SERVER['REQUEST_METHOD'] !== 'GET'){
+            throw new Exception('', 405);
+            exit;
+        }
         
         $JWT = $this->isAuthenticated();
 
         if(!$JWT){
-            throw new Exception('', 401);
+            throw new Exception('no token', 401);
             die;
         }
 
@@ -264,6 +275,17 @@ class ApiController extends Controller{
 
     public function postMessage(int $receiver){
 
+        header("Access-Control-Allow-Origin: https://localhost:3000");
+        header("Access-Control-Allow-Headers: X-XSRF-TOKEN, *");
+        header("Access-Control-Allow-Credentials: true");
+        header('Content-Type: application/json');
+        header('Access-Control-Allow-Methods: POST');
+
+        if($_SERVER['REQUEST_METHOD'] === 'OPTIONS'){
+            throw new Exception('', 200);
+            exit;
+        }
+
         $JWT = $this->isAuthenticated();
 
         if(!$JWT){
@@ -271,14 +293,12 @@ class ApiController extends Controller{
             exit;
         };
 
-        header('Content-Type: application/json');
-        header('Access-Control-Allow-Methods: POST');
-        $post = json_decode(file_get_contents('php://input'));
-
         if($_SERVER['REQUEST_METHOD'] !== 'POST'){
             throw new Exception('', 405);
             exit;
         }
+
+        $post = json_decode(file_get_contents('php://input'));
 
         if(isset($post->content) || isset($_FILES['image'])){
             if(!empty($post->content) || !empty($_FILES['image'])){
@@ -377,6 +397,16 @@ class ApiController extends Controller{
     }
 
     public function getConversations(){
+        header("Access-Control-Allow-Headers: X-XSRF-TOKEN, *");
+        header("Access-Control-Allow-Origin: https://localhost:3000");
+        header("Access-Control-Allow-Credentials: true");
+        header('Access-Control-Allow-Methods: GET');
+        header("Content-Type: application/json");
+
+        if($_SERVER['REQUEST_METHOD'] === 'OPTIONS'){
+            throw new Exception('', 200);
+            exit;
+        }
 
         $JWT = $this->isAuthenticated();
 
@@ -384,8 +414,6 @@ class ApiController extends Controller{
             throw new Exception('', 401);
             exit;
         };
-
-        header('Access-Control-Allow-Methods: GET');
 
         if($_SERVER['REQUEST_METHOD'] !== 'GET'){
             throw new Exception('', 405);
@@ -412,19 +440,104 @@ class ApiController extends Controller{
             $usersModel = new UsersModel();
             $contact = $usersModel->getOneBy('id', $userId);
             $contact = $usersModel->hydrate($contact);
-            foreach($conversation as $message){
-                $messagesModel = new MessagesModel();
-                $message = $messagesModel->hydrate($message);
-                $data[$contact->getPseudo()][] = [
-                    'id' => $message->getId(),
-                    'sender' => $message->getSender(),
-                    'receiver' => $message->getReceiver(),
-                    'content' => $message->getContent(),
-                    'type' => $message->getType(),
-                    'is_read' => $message->getIs_read(),
-                    'created_at' => $message->getCreated_at()
-                ];
+
+            $messagesModel = new MessagesModel();
+            $message = $messagesModel->hydrate($conversation[array_key_last($conversation)]);
+
+            if($message->getSender() === $user->getId()){
+                $sent = true;
+            }else{
+                $sent = false;
             }
+
+            $data[$contact->getPseudo()] = [
+                'id' => $message->getId(),
+                'pseudo_contact' => $contact->getPseudo(),
+                'img_contact' => $contact->getImage(),
+                'id_contact' => $contact->getId(),
+                'sent' => $sent,
+                'content' => $message->getContent(),
+                'type' => $message->getType(),
+                'is_read' => $message->getIs_read(),
+                'created_at' => $message->getCreated_at()
+            ];
+        }
+
+        echo json_encode(array_reverse($data));
+        throw new Exception('', 200);
+        die;
+    }
+
+    public function getMessages(int $idContact){
+        header("Access-Control-Allow-Headers: X-XSRF-TOKEN, *");
+        header("Access-Control-Allow-Origin: https://localhost:3000");
+        header("Access-Control-Allow-Credentials: true");
+        header('Access-Control-Allow-Methods: GET');
+        header("Content-Type: application/json");
+
+        if($_SERVER['REQUEST_METHOD'] === 'OPTIONS'){
+            throw new Exception('', 200);
+            exit;
+        }
+
+        $JWT = $this->isAuthenticated();
+
+        if(!$JWT){
+            throw new Exception('', 401);
+            exit;
+        };
+
+        if($_SERVER['REQUEST_METHOD'] !== 'GET'){
+            throw new Exception('', 405);
+            exit;
+        }
+
+        $usersModel = new UsersModel();
+        $user = $usersModel->getOneBy('id', $JWT->getUser()->getId());
+        if(!$user){
+            throw new Exception('', 400);
+            exit;
+        }
+        $user = $usersModel->hydrate($user);
+
+        $usersModel = new UsersModel();
+        $contact = $usersModel->getOneBy('id', $idContact);
+        if(!$contact){
+            throw new Exception('', 400);
+            exit;
+        }
+        $contact = $usersModel->hydrate($contact);
+
+        $messagesModel = new MessagesModel();
+        $messages = $messagesModel->getMessages($user, $contact);
+        if(!$messages){
+            throw new Exception('Aucun message', 404);
+            exit;
+        }
+
+        $data = [];
+        $i = 0;
+        foreach($messages as $message){
+
+            $messagesModel = new MessagesModel();
+            $message = $messagesModel->hydrate($message);
+
+            if($message->getSender() === $user->getId()){
+                $sent = true;
+            }else{
+                $sent = false;
+            }
+
+            $data[$i] = [
+                'id' => $message->getId(),
+                'img_contact' => $contact->getImage(),
+                'sent' => $sent,
+                'content' => $message->getContent(),
+                'type' => $message->getType(),
+                'is_read' => $message->getIs_read(),
+                'created_at' => $message->getCreated_at()
+            ];
+            $i++;
         }
 
         echo json_encode($data);
@@ -479,10 +592,16 @@ class ApiController extends Controller{
 
     public function searchUsers(string $pseudo){
 
-        header("Access-Control-Allow-Headers: X-XSRF-TOKEN");
+        header("Access-Control-Allow-Headers: X-XSRF-TOKEN, *");
         header("Access-Control-Allow-Origin: https://localhost:3000");
         header("Access-Control-Allow-Credentials: true");
         header('Access-Control-Allow-Methods: GET');
+        header("Content-Type: application/json");
+
+        if($_SERVER['REQUEST_METHOD'] === 'OPTIONS'){
+            throw new Exception('', 200);
+            exit;
+        }
 
         $JWT = $this->isAuthenticated();
 
@@ -491,26 +610,29 @@ class ApiController extends Controller{
             exit;
         };
 
-        // $usersModel = new UsersModel();
-        // $users = $usersModel->search(htmlspecialchars($pseudo));
+        $usersModel = new UsersModel();
+        $users = $usersModel->search(htmlspecialchars($pseudo));
 
-        // if(!$users){
-        //     throw new Exception('', 400);
-        //     exit;
-        // }
+        if(!$users){
+            throw new Exception('', 404);
+            exit;
+        }
 
-        // $data = [];
-        // foreach($users as $user){
-        //     $usersModel = new UsersModel();
-        //     $user = $usersModel->hydrate($user);
+        $data = [];
+        $i = 0;
+        foreach($users as $user){
+            $usersModel = new UsersModel();
+            $user = $usersModel->hydrate($user);
 
-        //     $data[$user->getId()] = [
-        //         'pseudo' => $user->getPseudo(),
-        //         'img' => $user->getImage()
-        //     ];
-        // }
+            $data[$user->getId()] = [
+                'id' => $user->getId(),
+                'pseudo' => $user->getPseudo(),
+                'img' => $user->getImage()
+            ];
+            $i++;
+        }
 
-        // echo json_encode($data);
+        echo json_encode($data);
         throw new Exception('', 200);
         die;
     }

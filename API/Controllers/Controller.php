@@ -69,9 +69,8 @@ abstract class Controller{
             return false;
         }
 
-    
-        $xsrfToken = $_SERVER['HTTP_X_XSRF_TOKEN'];
-        $jwtToken = $_COOKIE['access_token'];
+        $xsrfToken = htmlspecialchars($_SERVER['HTTP_X_XSRF_TOKEN']);
+        $jwtToken = htmlspecialchars($_COOKIE['access_token']);
 
         $JWT = new JWT();
         if(!$JWT->setToken($jwtToken, $xsrfToken)){

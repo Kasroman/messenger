@@ -20,6 +20,7 @@ class MessagesModel extends Model{
     public function getConversations(UsersModel $user): array
     {
         $userId = $user->getId();
+
         $messages = $this->sendQuery("SELECT * FROM $this->table WHERE sender = $userId OR receiver = $userId ORDER BY created_at")->fetchAll();
 
         $conversations = [];
@@ -31,6 +32,15 @@ class MessagesModel extends Model{
             }
         }
         return $conversations;
+    }
+
+    // $this->sendQuery("SET @last = (SELECT MAX(created_at) FROM $this->table); SELECT * FROM $this->table WHERE (sender = $userId OR receiver = $userId) AND created_at = @last")->fetch();
+
+    public function getMessages(UsersModel $user, UsersModel $contact){
+        $userId = $user->getId();
+        $contactId = $contact->getId();
+        
+        return $this->sendQuery("SELECT * FROM $this->table WHERE ( sender = $userId AND receiver = $contactId ) OR ( sender = $contactId AND receiver = $userId ) ORDER BY created_at")->fetchAll();
     }
 
     /**

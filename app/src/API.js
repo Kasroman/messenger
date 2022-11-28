@@ -1,5 +1,17 @@
 class API {
 
+    static jsonToArray(json, withKey = false){
+        let data = [];
+        for (const [key, value] of Object.entries(json)){
+            if(withKey){
+                data[key] = value;
+            }else{
+                data.push(value);
+            }
+        }
+        return data;
+    }
+
     static async register(mail, pseudo, password) {
 
         const headers = new Headers();
@@ -107,6 +119,7 @@ class API {
         headers.append('Origin', 'https://localhost:3000');
 
         const xsrfToken = localStorage.getItem('xsrfToken');
+
         if(xsrfToken){
             headers.append("X-XSRF-TOKEN", xsrfToken);
         }
@@ -119,6 +132,75 @@ class API {
         };
 
         const response = await fetch(`https://messenger/Api/searchUsers/${pseudo}`, requestOptions);
+        return response;
+    }
+
+    static async getConversations(){
+        const headers = new Headers();
+        headers.append('Origin', 'https://localhost:3000');
+
+        const xsrfToken = localStorage.getItem('xsrfToken');
+
+        if(xsrfToken){
+            headers.append("X-XSRF-TOKEN", xsrfToken);
+        }
+
+        const requestOptions = {
+            method: 'GET',
+            mode: 'cors',
+            headers: headers,
+            credentials: 'include'
+        };
+
+        const response = await fetch(`https://messenger/Api/getConversations`, requestOptions);
+        return response;
+    }
+
+    static async getMessages(idContact){
+        const headers = new Headers();
+        headers.append('Origin', 'https://localhost:3000');
+
+        const xsrfToken = localStorage.getItem('xsrfToken');
+
+        if(xsrfToken){
+            headers.append("X-XSRF-TOKEN", xsrfToken);
+        }
+
+        const requestOptions = {
+            method: 'GET',
+            mode: 'cors',
+            headers: headers,
+            credentials: 'include'
+        };
+
+        const response = await fetch(`https://messenger/Api/getMessages/${idContact}`, requestOptions);
+        return response;
+    }
+
+    static async postMessage(idContact, content){
+
+        console.log(idContact, content);
+
+        const headers = new Headers();
+        headers.append('Origin', 'https://localhost:3000');
+
+        const xsrfToken = localStorage.getItem('xsrfToken');
+
+        if(xsrfToken){
+            headers.append("X-XSRF-TOKEN", xsrfToken);
+        }
+
+        const requestOptions = {
+            method: 'POST',
+            mode: 'cors',
+            headers: headers,
+            credentials: 'include',
+            body: JSON.stringify({
+                "content": content,
+            })
+        };
+
+        const response = await fetch(`https://messenger/Api/postMessage/${idContact}`, requestOptions);
         return response;
     }
 }

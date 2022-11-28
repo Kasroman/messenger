@@ -25,7 +25,7 @@ const Login = () => {
                 throw json.message;
             }else{
                 const json = await response.json();
-                localStorage.setItem('xsrfToken', JSON.stringify(json.xsrfToken)); 
+                localStorage.setItem('xsrfToken', json.xsrfToken); 
                 window.location.reload(false);
             }
         }catch(err){
