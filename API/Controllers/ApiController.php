@@ -10,13 +10,6 @@ use DateTime;
 
 class ApiController extends Controller{
 
-    public function test(){
-        echo json_encode([
-            'message' => 'OK : domaine accessible via https'
-        ]);
-        http_response_code(200);
-    }
-
     public function login(){
         header("Access-Control-Allow-Origin: https://localhost:3000");
         header("Access-Control-Allow-Credentials: true");
@@ -65,7 +58,6 @@ class ApiController extends Controller{
                     $token = new JWT();
                     $token->generate($user);
                     
-                    // setcookie('access_token', $token->getToken(), $token->getExp(), '/', null, true, true);
                     setcookie('access_token', $token->getToken(), [
                         'expires' => $token->getExp(),
                         'path' => '/',
@@ -464,7 +456,7 @@ class ApiController extends Controller{
             ];
         }
 
-        echo json_encode(array_reverse($data));
+        echo json_encode($data);
         throw new Exception('', 200);
         die;
     }
